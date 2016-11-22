@@ -390,10 +390,46 @@ static NSString* toBase64(NSData* data) {
     
     return data;
 }
+- (NSString *)applicationLibraryDirectory
+{
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+    NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
+    return basePath;
+}
+
+- (NSString *)getDraftsDirectory
+{
+    NSString *draftsDirectory = [[self applicationLibraryDirectory] stringByAppendingPathComponent:@"files/drafts"];
+    [self createDirectory:draftsDirectory];
+    return draftsDirectory;
+}
+- (NSString*)createDirectory:(NSString*)dir
+{
+    BOOL isDir = FALSE;
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    BOOL isDirExist = [fileManager fileExistsAtPath:dir isDirectory:&isDir];
+    
+    //If dir is not exist, create it
+    if(!(isDirExist && isDir))
+    {
+        BOOL bCreateDir =[[NSFileManager defaultManager] createDirectoryAtPath:dir withIntermediateDirectories:YES attributes:nil error:nil];
+        if (bCreateDir == NO)
+        {
+            NSLog(@"Failed to create Directory:%@", dir);
+            return nil;
+        }
+    } else{
+        //NSLog(@"Directory exist:%@", dir);
+    }
+    
+    return dir;
+}
 
 - (NSString*)tempFilePath:(NSString*)extension
 {
-    NSString* docsPath = [NSTemporaryDirectory()stringByStandardizingPath];
+    
+    //NSString* docsPath = [NSTemporaryDirectory()stringByStandardizingPath];
+    NSString* docsPath = [self getDraftsDirectory];
     NSFileManager* fileMgr = [[NSFileManager alloc] init]; // recommended by Apple (vs [NSFileManager defaultManager]) to be threadsafe
     NSString* filePath;
     
